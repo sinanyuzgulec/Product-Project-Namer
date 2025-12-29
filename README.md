@@ -6,7 +6,7 @@ Bu araç, yeni yazılım projeleri, IoT cihazları veya fiziksel ürünler için
 
 - **İsim Üretim Motoru:** Proje veya ürününüz için CVCV/CVCVC yapılandırmasına uygun, telaffuzu kolay isimler üretir.
 - **Teknik Uygunluk Kontrolü:** Üretilen ismin `.com`, `.io`, `.ai` gibi teknik projelerde sık kullanılan uzantılardaki müsaitlik durumunu Whois üzerinden (multi-threaded) denetler.
-- **Karar Mekanizması:** Tinder tarzı "Seç/Pas" mantığı ile onlarca seçenek arasından hızlıca eleme yapmanızı sağlar.
+- **Karar Mekanizması:** Kaydırma uygulamaları tarzı "Seç/Pas" mantığı ile onlarca seçenek arasından hızlıca eleme yapmanızı sağlar.
 
 ## 🛠️ Kurulum
 
@@ -19,3 +19,4 @@ Bu araç, yeni yazılım projeleri, IoT cihazları veya fiziksel ürünler için
 - **Makerlar/IoT Uzmanları:** Cihazların hostname veya marka kimliklerini belirleme.
 
 - **Girişimciler:** Ürün lansmanı öncesi hızlı isimlendirme ve domain ön araştırması.
+
