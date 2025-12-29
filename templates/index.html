@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Product & Project Namer</title>
+    <style>
+        :root { --bg: #0a0a0a; --text: #e0e0e0; --primary: #00e676; --secondary: #ff1744; --border: #333; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .settings-bar { background: #181818; padding: 15px 30px; border-bottom: 1px solid var(--border); display: flex; gap: 25px; align-items: center; font-size: 0.9em; }
+        .settings-bar select, .settings-bar input { background: #252525; border: 1px solid var(--border); color: white; padding: 5px; border-radius: 4px; }
+        .app-container { display: flex; flex: 1; overflow: hidden; }
+        .main-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 1px solid var(--border); }
+        #card { width: 450px; height: 280px; background: linear-gradient(145deg, #1a1a1a, #111); border-radius: 30px; display: flex; align-items: center; justify-content: center; font-size: 3.5em; font-weight: 900; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid var(--border); margin-bottom: 30px; }
+        .buttons { display: flex; gap: 20px; }
+        .btn { padding: 15px 40px; border-radius: 12px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .like { background: var(--primary); color: #000; }
+        .dislike { background: var(--secondary); color: #fff; }
+        .sidebar { width: 400px; background: #121212; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 20px; background: #181818; border-bottom: 1px solid var(--border); }
+        .sidebar-content { flex: 1; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        td { padding: 12px; border-bottom: 1px solid #222; }
+        .status-item { font-size: 0.7em; padding: 2px 5px; border-radius: 4px; margin-right: 4px; border: 1px solid #444; }
+        .available { color: var(--primary); border-color: var(--primary); }
+        .taken { color: var(--secondary); opacity: 0.5; }
+        .export-btn { text-decoration: none; color: var(--primary); border: 1px solid var(--primary); padding: 5px 10px; border-radius: 5px; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+
+<div class="settings-bar">
+    <div>İsim Uzunluğu: 
+        <select id="nameLength">
+            <option value="4">4 Karakter</option>
+            <option value="5">5 Karakter</option>
+            <option value="6" selected>6 Karakter</option>
+        </select>
+    </div>
+    <div>Yapı: 
+        <select id="nameStructure">
+            <option value="CVCV">CVCV (Akıcı)</option>
+            <option value="CVCVC">CVCVC (Kurumsal)</option>
+        </select>
+    </div>
+    <div id="extCheckboxes" style="display: flex; gap: 10px;">
+        <label><input type="checkbox" value=".com" checked> .com</label>
+        <label><input type="checkbox" value=".io" checked> .io</label>
+        <label><input type="checkbox" value=".ai"> .ai</label>
+		<label><input type="checkbox" value=".net" checked> .net</label>
+        <label><input type="checkbox" value=".tr" checked> .tr</label>
+        <label><input type="checkbox" value=".comtr"> .comtr</label>
+    </div>
+</div>
+
+<div class="app-container">
+    <div class="main-container">
+        <div id="card">Yükleniyor...</div>
+        <div class="buttons">
+            <button class="btn dislike" onclick="nextName()">PAS (←)</button>
+            <button class="btn like" onclick="saveCurrentName()">SEÇ (→)</button>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3 style="margin:0;">Kaydedilen İsimler</h3>
+                <a href="/export" class="export-btn">CSV İndir</a>
+            </div>
+            <input type="text" id="searchInput" placeholder="Filtrele..." oninput="applyFilters()" style="width:90%; padding:5px; background:#222; border:1px solid #444; color:white;">
+        </div>
+        <div class="sidebar-content">
+            <table><tbody id="likesBody"></tbody></table>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentName = "";
+    let knownNames = new Set();
+
+    async function nextName() {
+        const length = document.getElementById('nameLength').value;
+        const structure = document.getElementById('nameStructure').value;
+        const res = await fetch('/generate_name', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ length, structure })
+        });
+        const data = await res.json();
+        currentName = data.name;
+        document.getElementById('card').innerText = currentName;
+    }
+
+    async function saveCurrentName() {
+        if (!currentName) return;
+        await fetch('/save_name', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ name: currentName })
+        });
+        syncList();
+        nextName();
+    }
+
+    async function syncList() {
+        const res = await fetch('/list_saved');
+        const data = await res.json();
+        const tbody = document.getElementById('likesBody');
+        
+        Object.keys(data.saved).forEach(name => {
+            if (!knownNames.has(name)) {
+                knownNames.add(name);
+                const row = `<tr id="row-${name}">
+                    <td>
+                        <b style="font-size:1.1em">${name}</b>
+                        <div id="status-${name}" style="margin-top:5px">Sorgulanıyor...</div>
+                    </td>
+                    <td><button onclick="deleteName('${name}')" style="color:red; background:none; border:none; cursor:pointer;">Sil</button></td>
+                </tr>`;
+                tbody.insertAdjacentHTML('afterbegin', row);
+                fetchAvailability(name);
+            }
+        });
+    }
+
+    async function fetchAvailability(name) {
+        const selectedExts = Array.from(document.querySelectorAll('#extCheckboxes input:checked')).map(el => el.value);
+        const res = await fetch('/check_availability', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ name, extensions: selectedExts })
+        });
+        const data = await res.json();
+        const container = document.getElementById(`status-${name}`);
+        container.innerHTML = "";
+        Object.entries(data).forEach(([ext, isAvail]) => {
+            const cls = isAvail ? "available" : "taken";
+            container.innerHTML += `<span class="status-item ${cls}">${ext} ${isAvail ? '✓' : '×'}</span>`;
+        });
+    }
+
+    async function deleteName(name) {
+        await fetch('/delete_name', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ name })
+        });
+        document.getElementById(`row-${name}`).remove();
+        knownNames.delete(name);
+    }
+
+    function applyFilters() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        document.querySelectorAll('#likesBody tr').forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none";
+        });
+    }
+
+    document.addEventListener('keydown', e => {
+        if(e.key === "ArrowLeft") nextName();
+        if(e.key === "ArrowRight") saveCurrentName();
+    });
+
+    nextName();
+    setInterval(syncList, 3000);
+</script>
+</body>
+</html>
