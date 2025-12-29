@@ -1,4 +1,4 @@
-# 🚀 Product & Project Namer Pro
+# 🚀 Product & Project Namer
 
 Bu araç, yeni yazılım projeleri, IoT cihazları veya fiziksel ürünler için **akılda kalıcı ve fonetik olarak uyumlu isimler** üretmek, aynı zamanda bu isimlerin dijital varlığını (domain) kontrol etmek için geliştirilmiş bir mühendis asistanıdır.
 
@@ -17,4 +17,5 @@ Bu araç, yeni yazılım projeleri, IoT cihazları veya fiziksel ürünler için
 ## 📈 Kullanım Senaryoları
 - **Yazılım Geliştiriciler:** Yeni bir repo veya kütüphane için kısa isim bulma.
 - **Makerlar/IoT Uzmanları:** Cihazların hostname veya marka kimliklerini belirleme.
+
 - **Girişimciler:** Ürün lansmanı öncesi hızlı isimlendirme ve domain ön araştırması.
